@@ -3,16 +3,14 @@ use std::fs::OpenOptions;
 
 fn main() -> std::io::Result<()> {
     println!("RUST: Begin main");
-    let outgoing_pipe_path = "r2j"; // replace with your pipe path
-    let incoming_pipe_path = "j2r"; // replace with your pipe path
+    let outgoing_pipe_path = "r2j";
+    let incoming_pipe_path = "j2r";
 
     // Open the named pipe for reading and writing
     let mut outgoing_file = OpenOptions::new()
     .read(false)
     .write(true)
     .open(outgoing_pipe_path)?;
-
-    // println!("huh");
 
     // Open the named pipe for reading and writing
     let mut incoming_file = OpenOptions::new()
@@ -26,40 +24,27 @@ fn main() -> std::io::Result<()> {
 
     loop {
         println!("RUST: Waiting for command...");
-        let mut buffer = [0]; // assuming the command is at most 12 bytes long
-        incoming_file.read(&mut buffer)?; //the read method in Rust is a blocking operation. If there's no data available to read, the process will block until data becomes available
-
-        // let line = String::from_utf8_lossy(&buffer);
-        println!("RUST: Received command: {:?}", buffer[0] as char);
-
-        match buffer {
-            [49] => { // 49 is the ASCII code for '1'
-                println!("RUST: Writing get_bytes_1 to pipe");
-                let result = get_bytes_1();
-                outgoing_file.write_all(&result[..])?; //creates a slice that includes all elements of result
-            }
-            [50] => { // 50 is the ASCII code for '2'
-                println!("RUST: Writing get_bytes_2 to pipe");
-                let result = get_bytes_2();
-                outgoing_file.write_all(&result[..])?;
-            }
-            _ => {
-                println!("RUST: Unknown command!!");
-                // handle unknown function
-            }
-        }
+        let mut buffer = [0; 8]; // the command is 8 bytes long
+        // Print buffer
+        // println!("RUST: Buffer: {:?}", buffer);
+        incoming_file.read_exact(&mut buffer)?; //the read method in Rust is a blocking operation. If there's no data available to read, the process will block until data becomes available
+        let num = f64::from_le_bytes(buffer); // convert the bytes to a float
+        println!("RUST: Received command: {:?}", num);
+        println!("RUST: Writing rust_function result to pipe");
+                        let result = rust_func_1(num);
+                        outgoing_file.write_all(&result[..])?; //creates a slice that includes all elements of result
     }
 
 }
 
-fn get_bytes_1() -> [u8; 8] {
-    let num = 9.5f64;
-    let bytes = num.to_le_bytes(); // convert the float to little-endian bytes
+fn rust_func_1(num: f64) -> [u8; 8] {
+    let val = num * 2.0;
+    let bytes = val.to_le_bytes(); // convert the float to little-endian bytes
     bytes
 }
 
-fn get_bytes_2() -> [u8; 8] {
-    let num = 0.8f64;
-    let bytes = num.to_le_bytes(); // convert the float to little-endian bytes
-    bytes
-}
+// fn rust_func_2(num: f64) -> [u8; 8] {
+//     let num = 1.8f64;
+//     let bytes = num.to_le_bytes(); // convert the float to little-endian bytes
+//     bytes
+// }
