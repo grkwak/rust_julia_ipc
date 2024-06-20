@@ -30,20 +30,21 @@ fn main() -> std::io::Result<()> {
         incoming_file.read(&mut buffer)?; //the read method in Rust is a blocking operation. If there's no data available to read, the process will block until data becomes available
 
         // let line = String::from_utf8_lossy(&buffer);
-        println!("RUST: Received command: {:?}", buffer);
+        println!("RUST: Received command: {:?}", buffer[0] as char);
 
         match buffer {
             [49] => { // 49 is the ASCII code for '1'
                 println!("RUST: Writing get_bytes_1 to pipe");
                 let result = get_bytes_1();
-                outgoing_file.write_all(&result)?;
+                outgoing_file.write_all(&result[..])?; //creates a slice that includes all elements of result
             }
             [50] => { // 50 is the ASCII code for '2'
                 println!("RUST: Writing get_bytes_2 to pipe");
                 let result = get_bytes_2();
-                outgoing_file.write_all(&result)?;
+                outgoing_file.write_all(&result[..])?;
             }
             _ => {
+                println!("RUST: Unknown command!!");
                 // handle unknown function
             }
         }
@@ -51,10 +52,14 @@ fn main() -> std::io::Result<()> {
 
 }
 
-fn get_bytes_1() -> Vec<u8> {
-    vec![2, 3, 4, 5, 6]
+fn get_bytes_1() -> [u8; 8] {
+    let num = 9.5f64;
+    let bytes = num.to_le_bytes(); // convert the float to little-endian bytes
+    bytes
 }
 
-fn get_bytes_2() -> Vec<u8> {
-    vec![7, 8, 9, 10, 11]
+fn get_bytes_2() -> [u8; 8] {
+    let num = 0.8f64;
+    let bytes = num.to_le_bytes(); // convert the float to little-endian bytes
+    bytes
 }
