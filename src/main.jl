@@ -18,17 +18,22 @@ function call_rust_func(num::Float64)
     # Wait for a certain character to be pushed to the pipe
     result = read(incoming_pipe, 8) # Blocks 10 bytes are received
     println("JULIA: Received Rust result: ", reinterpret(Float64, result)[1])
+
 end
 
 function main()
+    println("JULIA: Begin main\n\n")
+    count = 0
 
-    println("JULIA: Begin main")
     while true
-        println("JULIA: Begin loop")
+        #
         sleep(1)
-
+        println("\nFunc call #", count)
         call_rust_func(30.5)
+        count += 1
+        println("\nFunc call #", count)
         call_rust_func(29.1)
+        count += 1
     end
 end
 

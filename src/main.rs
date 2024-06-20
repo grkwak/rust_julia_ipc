@@ -2,7 +2,7 @@ use std::io::{Read, Write};
 use std::fs::OpenOptions;
 
 fn main() -> std::io::Result<()> {
-    println!("RUST: Begin main");
+    println!("RUST: Begin main\n\n");
     let outgoing_pipe_path = "r2j";
     let incoming_pipe_path = "j2r";
 
@@ -22,7 +22,10 @@ fn main() -> std::io::Result<()> {
      In Unix-like systems, opening a named pipe for reading will block until another process opens the pipe for writing, and vice versa
     */
 
+    let mut count = 0;
     loop {
+        println!("\nFunc call #{:?}", count);
+        count += 1;
         println!("RUST: Waiting for command...");
         let mut buffer = [0; 8]; // the command is 8 bytes long
         // Print buffer
