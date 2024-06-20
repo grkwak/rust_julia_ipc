@@ -14,7 +14,7 @@ function main()
         sleep(1)
 
         # Write to the pipe
-        println(outgoing_pipe, "get_bytes_1") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
+        print(outgoing_pipe, "1") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
         flush(outgoing_pipe)
         println("JULIA: Waiting for response")
 
@@ -23,7 +23,7 @@ function main()
         println("JULIA: Received get_bytes_1: ", result)
 
         # Write to the pipe
-        println(outgoing_pipe, "get_bytes_2") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
+        print(outgoing_pipe, "2") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
         flush(outgoing_pipe)
         println("JULIA: Waiting for response")
 

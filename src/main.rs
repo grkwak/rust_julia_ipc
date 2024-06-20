@@ -26,19 +26,19 @@ fn main() -> std::io::Result<()> {
 
     loop {
         println!("RUST: Waiting for command...");
-        let mut buffer = [0; 12]; // assuming the command is at most 12 bytes long
+        let mut buffer = [0]; // assuming the command is at most 12 bytes long
         incoming_file.read(&mut buffer)?; //the read method in Rust is a blocking operation. If there's no data available to read, the process will block until data becomes available
 
-        let line = String::from_utf8_lossy(&buffer);
-        println!("RUST: Received command: {}", line);
+        // let line = String::from_utf8_lossy(&buffer);
+        println!("RUST: Received command: {:?}", buffer);
 
-        match line.trim() {
-            "get_bytes_1" => {
+        match buffer {
+            [49] => { // 49 is the ASCII code for '1'
                 println!("RUST: Writing get_bytes_1 to pipe");
                 let result = get_bytes_1();
                 outgoing_file.write_all(&result)?;
             }
-            "get_bytes_2" => {
+            [50] => { // 50 is the ASCII code for '2'
                 println!("RUST: Writing get_bytes_2 to pipe");
                 let result = get_bytes_2();
                 outgoing_file.write_all(&result)?;
