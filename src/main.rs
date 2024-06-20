@@ -1,32 +1,60 @@
-use std::os::unix::net::UnixStream;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{Read, Write};
+use std::fs::OpenOptions;
 
 fn main() -> std::io::Result<()> {
-    let pipe_path = "pipe_name"; // replace with your pipe path
+    println!("RUST: Begin main");
+    let outgoing_pipe_path = "r2j"; // replace with your pipe path
+    let incoming_pipe_path = "j2r"; // replace with your pipe path
 
     // Open the named pipe for reading and writing
-    let stream = UnixStream::connect(pipe_path)?;
+    let mut outgoing_file = OpenOptions::new()
+    .read(false)
+    .write(true)
+    .open(outgoing_pipe_path)?;
 
-    // Create a BufReader for the stream
-    let mut reader = BufReader::new(&stream);
+    // println!("huh");
 
-    // Write to the pipe
-    writeln!(stream, "get_bytes1")?;
-    stream.flush()?;
+    // Open the named pipe for reading and writing
+    let mut incoming_file = OpenOptions::new()
+    .read(true)
+    .write(false)
+    .open(incoming_pipe_path)?;
 
-    // Read from the pipe
-    let mut line = String::new();
-    reader.read_line(&mut line)?;
-    println!("Received get_bytes_1: {}", line.trim());
+    /*
+     In Unix-like systems, opening a named pipe for reading will block until another process opens the pipe for writing, and vice versa
+    */
 
-    // Write to the pipe
-    writeln!(stream, "get_bytes2")?;
-    stream.flush()?;
+    loop {
+        println!("RUST: Waiting for command...");
+        let mut buffer = [0; 12]; // assuming the command is at most 12 bytes long
+        incoming_file.read(&mut buffer)?; //the read method in Rust is a blocking operation. If there's no data available to read, the process will block until data becomes available
 
-    // Read from the pipe
-    line.clear();
-    reader.read_line(&mut line)?;
-    println!("Received get_bytes_2: {}", line.trim());
+        let line = String::from_utf8_lossy(&buffer);
+        println!("RUST: Received command: {}", line);
 
-    Ok(())
+        match line.trim() {
+            "get_bytes_1" => {
+                println!("RUST: Writing get_bytes_1 to pipe");
+                let result = get_bytes_1();
+                outgoing_file.write_all(&result)?;
+            }
+            "get_bytes_2" => {
+                println!("RUST: Writing get_bytes_2 to pipe");
+                let result = get_bytes_2();
+                outgoing_file.write_all(&result)?;
+            }
+            _ => {
+                // handle unknown function
+            }
+        }
+    }
+
+}
+
+fn get_bytes_1() -> Vec<u8> {
+    vec![2, 3, 4, 5, 6]
+}
+
+fn get_bytes_2() -> Vec<u8> {
+    vec![7, 8, 9, 10, 11]
 }

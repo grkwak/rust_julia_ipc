@@ -5,20 +5,31 @@ In your code, read(pipe, 10) will block until 10 bytes are available to read fro
 =#
 
 function main()
-    pipe = open("pipe_name", "r+")
-    println("Begin")
-    while true
+    outgoing_pipe = open("j2r", "r+")
+    incoming_pipe = open("r2j", "r+")
+
+    println("JULIA: Begin main")
+    for i in 1:5
+        println("JULIA: Begin loop ", i)
         sleep(1)
 
-        println(pipe, "get_bytes1") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
-        flush(pipe)
-        result = read(pipe, 10) # Blocks 10 bytes are received
-        println("Received get_bytes_1: ", result)
+        # Write to the pipe
+        println(outgoing_pipe, "get_bytes_1") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
+        flush(outgoing_pipe)
+        println("JULIA: Waiting for response")
 
-        println(pipe, "get_bytes2") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
-        flush(pipe)
-        result = read(pipe, 10) # Blocks until 10 bytes are received
-        println("Received get_bytes_2: ", result)
+        # Wait for a certain character to be pushed to the pipe
+        result = read(incoming_pipe, 5) # Blocks 10 bytes are received
+        println("JULIA: Received get_bytes_1: ", result)
+
+        # Write to the pipe
+        println(outgoing_pipe, "get_bytes_2") # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
+        flush(outgoing_pipe)
+        println("JULIA: Waiting for response")
+
+        # Wait for a certain character to be pushed to the pipe
+        result = read(incoming_pipe, 5) # Blocks until 10 bytes are received
+        println("JULIA: Received get_bytes_2: ", result)
     end
 end
 
