@@ -41,7 +41,7 @@ fn main() -> std::io::Result<()> {
 }
 
 fn rust_func_1(num: f64) -> [u8; 8] {
-    let val = num * 2.0;
+    let val = num * 10.0;
     let bytes = val.to_le_bytes(); // convert the float to little-endian bytes
     bytes
 }
