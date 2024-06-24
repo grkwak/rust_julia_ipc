@@ -4,37 +4,36 @@ Yes, the read function in Julia is a blocking operation. If there aren't enough 
 In your code, read(pipe, 10) will block until 10 bytes are available to read from the pipe. If fewer than 10 bytes are available, your program will pause and wait until more bytes are written to the pipe.
 =#
 
-function call_rust_func(num::Float64)
+# func_name = { init, step, close}
+function call_rust_func(func_name::String, num::Float64)
 
-    outgoing_pipe = open("j2r", "r+")
-    incoming_pipe = open("r2j", "r+")
+    println("\n\nJULIA: Begin call_rust_func")
+
+    outgoing_pipe = open("j2r_" * func_name, "w")
 
     # Write to the pipe
     bytes = reinterpret(UInt8, [num])
     write(outgoing_pipe, bytes) # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
     flush(outgoing_pipe)
-    println("JULIA: Waiting for response")
+    close(outgoing_pipe)
 
+    println("JULIA: Waiting for response")
+    incoming_pipe = open("r2j_" * func_name, "r")
     # Wait for a certain character to be pushed to the pipe
     result = read(incoming_pipe, 8) # Blocks 10 bytes are received
-    println("JULIA: Received Rust result: ", reinterpret(Float64, result)[1])
+    close(incoming_pipe)
+    println("JULIA: Received Rust result ", reinterpret(Float64, result)[1])
 
 end
 
 function main()
     println("JULIA: Begin main\n\n")
-    count = 0
 
-    while true
-        #
-        sleep(1)
-        println("\nFunc call #", count)
-        call_rust_func(30.5)
-        count += 1
-        println("\nFunc call #", count)
-        call_rust_func(29.1)
-        count += 1
-    end
+    call_rust_func("init", 3.14)
+    call_rust_func("step", 2.71)
+    call_rust_func("close", 1.41)
+
+    println("\n\nJULIA: End main")
 end
 
 main()
