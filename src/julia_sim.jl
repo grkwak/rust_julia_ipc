@@ -5,7 +5,7 @@ In your code, read(pipe, 10) will block until 10 bytes are available to read fro
 =#
 
 # func_name = { init, close}
-function call_init_or_close(func_name::String, num::Float64)
+function call_init(num::Float64)
 
     println("\n\nJULIA: Begin calling ", func_name, "()")
 
@@ -22,7 +22,32 @@ function call_init_or_close(func_name::String, num::Float64)
     # Wait for a certain character to be pushed to the pipe
     result = read(incoming_pipe, 8) # Blocks 10 bytes are received
     close(incoming_pipe)
+
     println("JULIA: Received Rust result ", reinterpret(Float64, result)[1])
+
+end
+
+function call_close(num::Float64)
+    println("\n\nJULIA: Begin calling close()")
+
+    outgoing_pipe = open("j2r_close", "w")
+
+    # Write to the pipe
+    bytes = reinterpret(UInt8, [num])
+    write(outgoing_pipe, bytes) # These get_bytes do not use standard IO; instead, they use the IO stream associated with the pipe.
+    flush(outgoing_pipe)
+    close(outgoing_pipe)
+
+    println("JULIA: Waiting for response")
+    incoming_pipe = open("r2j_close", "r")
+    # Wait for a certain character to be pushed to the pipe
+    result = read(incoming_pipe, 8) # Blocks 10 bytes are received
+    close(incoming_pipe)
+
+    println("JULIA: Received Rust result ", reinterpret(Float64, result)[1])
+
+    outgoing_pipe = open("j2r_step", "w") # Open a pipe for writing
+    incoming_pipe = open("r2j_step", "r") # Open a pipe for reading
 
 end
 
@@ -49,12 +74,11 @@ function call_step(num::Float64, outgoing_pipe, incoming_pipe)
 end
 
 function main()
+    # Can't directly call these functions
     println("JULIA: Begin main\n\n")
 
     call_init_or_close("init", 1.0)
 
-    outgoing_pipe = open("j2r_step", "w") # Open a pipe for writing
-    incoming_pipe = open("r2j_step", "r") # Open a pipe for reading
     call_step(2.0, outgoing_pipe, incoming_pipe)
     call_step(3.0, outgoing_pipe, incoming_pipe)
     call_step(NaN, outgoing_pipe, incoming_pipe) # the special character that tells Rust we're done
