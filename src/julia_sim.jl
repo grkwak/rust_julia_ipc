@@ -29,9 +29,11 @@ end
 function main()
     println("JULIA: Begin main\n\n")
 
-    call_rust_func("init", 3.14)
-    call_rust_func("step", 2.71)
-    call_rust_func("close", 1.41)
+    call_rust_func("init", 1.0)
+    call_rust_func("step", 2.0)
+    call_rust_func("step", 3.0)
+    call_rust_func("step", 999) # the special character that tells Rust we're done
+    call_rust_func("close", 5.0)
 
     println("\n\nJULIA: End main")
 end

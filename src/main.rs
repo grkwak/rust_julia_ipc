@@ -8,8 +8,9 @@ use std::time::Duration;
 fn main() -> std::io::Result<()> {
     println!("RUST: Begin main\n\n");
 
+    // let mut str = "init"; //TODO: only have 1 incoming pipe and in that incoming pipe, say which Rust function to call AND the necessary params
     wait_for_julia_call("init")?;
-    wait_for_julia_call("step")?;
+    wait_for_julia_call("step")?; // won't actually know how many times Rust will be called
     wait_for_julia_call("close")?;
 
     println!("\n\nRUST: End main");
@@ -67,6 +68,8 @@ fn wait_for_julia_call(func_name: &str) -> std::io::Result<f64> {
     outgoing_file.write_all(&result[..])?;
 
     Ok(num) // Return the number
+
+    //Rust will close pipes for me automatically
 }
 
 fn rust_init(num: f64) -> [u8; 8] {
